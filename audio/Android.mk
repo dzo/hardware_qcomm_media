@@ -4,7 +4,7 @@ ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
     include $(AUDIO_HW_ROOT)/msm8660/Android.mk
 endif
 
-ifeq ($(call is-board-platform,msm7630_surf),true)
+ifeq ($(call is-chipset-in-board-platform,msm7630),true)
     include $(AUDIO_HW_ROOT)/msm7630/Android.mk
 endif
 
