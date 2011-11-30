@@ -283,9 +283,7 @@ public:
 
     virtual status_t    setVoiceVolume(float volume);
     virtual status_t    setMasterVolume(float volume);
-#ifdef FM_RADIO
     virtual status_t    setFmVolume(float volume);
-#endif
     virtual status_t    setMode(int mode);
 
     // mic mute
@@ -334,11 +332,9 @@ private:
     uint32_t    getInputSampleRate(uint32_t sampleRate);
     bool        checkOutputStandby();
     status_t    doRouting(AudioStreamInMSM72xx *input);
-#ifdef FM_RADIO
     status_t    enableFM(int sndDevice);
     status_t enableComboDevice(uint32_t sndDevice, bool enableOrDisable);
     status_t    disableFM();
-#endif
     AudioStreamInMSM72xx*   getActiveInput_l();
     FILE *fp;
 
