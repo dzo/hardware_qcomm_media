@@ -170,9 +170,7 @@ public:
     virtual status_t    initCheck();
 
     virtual status_t    setVoiceVolume(float volume);
-#ifdef FM_RADIO
-	virtual status_t    setFmVolume(float volume);
-#endif
+    virtual status_t    setFmVolume(float volume);
     virtual status_t    setMasterVolume(float volume);
 
     virtual status_t    setMode(int mode);
@@ -222,10 +220,8 @@ private:
     uint32_t    getInputSampleRate(uint32_t sampleRate);
     bool        checkOutputStandby();
     status_t    doRouting(AudioStreamInMSM72xx *input);
-#ifdef FM_RADIO
     status_t    enableFM();
     status_t    disableFM();
-#endif
     AudioStreamInMSM72xx*   getActiveInput_l();
 
     class AudioStreamOutMSM72xx : public AudioStreamOut {

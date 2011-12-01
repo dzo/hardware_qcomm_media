@@ -245,12 +245,11 @@ uint32_t AudioPolicyManager::getDeviceForStrategy(routing_strategy strategy, boo
         }
         // The second device used for sonification is the same as the device used by media strategy
         // FALL THROUGH
-#ifdef FM_RADIO
 
         // for analog FM alerts should be played on the speaker only
         if(FM_ANALOG == getFMMode())
             break;
-#endif
+
     case STRATEGY_MEDIA: {
         switch (mForceUse[AudioSystem::FOR_MEDIA]) {
         default:{
@@ -294,7 +293,6 @@ uint32_t AudioPolicyManager::getDeviceForStrategy(routing_strategy strategy, boo
             break;
        }
 
-#ifdef FM_RADIO
        if (mAvailableOutputDevices & AudioSystem::DEVICE_OUT_FM) {
            device |= AudioSystem::DEVICE_OUT_FM;
            if(FM_ANALOG == getFMMode()){
@@ -304,8 +302,7 @@ uint32_t AudioPolicyManager::getDeviceForStrategy(routing_strategy strategy, boo
                   device &= ~(device & AudioSystem::DEVICE_OUT_WIRED_HEADSET);
           }
        }
-#endif
-// Do not play media stream if in call and the requested device would change the hardware
+        // Do not play media stream if in call and the requested device would change the hardware
         // output routing
         if (mPhoneState == AudioSystem::MODE_IN_CALL &&
             !AudioSystem::isA2dpDevice((AudioSystem::audio_devices)device) &&
@@ -353,7 +350,6 @@ status_t AudioPolicyManager::setDeviceConnectionState(AudioSystem::audio_devices
         {
         // handle output device connection
         case AudioSystem::DEVICE_STATE_AVAILABLE:
-#ifdef FM_RADIO
 
             if(device == AudioSystem::DEVICE_OUT_FM){
                 char value[PROPERTY_VALUE_MAX];
@@ -377,7 +373,6 @@ status_t AudioPolicyManager::setDeviceConnectionState(AudioSystem::audio_devices
                     LOGW("FM started in %d Mode",fmMode);
                 }
             }
-#endif
             if (mAvailableOutputDevices & device) {
                 LOGW("setDeviceConnectionState() device already connected: %x", device);
                 return INVALID_OPERATION;
@@ -407,7 +402,6 @@ status_t AudioPolicyManager::setDeviceConnectionState(AudioSystem::audio_devices
             break;
         // handle output device disconnection
         case AudioSystem::DEVICE_STATE_UNAVAILABLE: {
-#ifdef FM_RADIO
 
             if(device == AudioSystem::DEVICE_OUT_FM){
                 uint32_t newDevice;
@@ -423,7 +417,6 @@ status_t AudioPolicyManager::setDeviceConnectionState(AudioSystem::audio_devices
                     setOutputDevice(mHardwareOutput, (AudioSystem::DEVICE_OUT_WIRED_HEADSET), true);
                 }
             }
-#endif
             if (!(mAvailableOutputDevices & device)) {
                 LOGW("setDeviceConnectionState() device not connected: %x", device);
                 return INVALID_OPERATION;
@@ -458,7 +451,6 @@ status_t AudioPolicyManager::setDeviceConnectionState(AudioSystem::audio_devices
 
         // request routing change if necessary
         uint32_t newDevice = getNewDevice(mHardwareOutput, false);
-#ifdef FM_RADIO
         if (device == AudioSystem::DEVICE_OUT_FM) {
             if (state == AudioSystem::DEVICE_STATE_AVAILABLE) {
                 mOutputs.valueFor(mHardwareOutput)->changeRefCount(AudioSystem::FM, 1);
@@ -470,7 +462,6 @@ status_t AudioPolicyManager::setDeviceConnectionState(AudioSystem::audio_devices
                 newDevice = getDeviceForStrategy(STRATEGY_MEDIA, false);
             }
         }
-#endif
 #ifdef WITH_A2DP
         AudioPolicyManagerBase::checkOutputForAllStrategies();
         // A2DP outputs must be closed after checkOutputForAllStrategies() is executed
@@ -648,15 +639,12 @@ uint32_t AudioPolicyManager::getDeviceForInputSource(int inputSource)
     case AUDIO_SOURCE_VOICE_CALL:
         device = AudioSystem::DEVICE_IN_VOICE_CALL;
         break;
-#ifdef FM_RADIO
     case AUDIO_SOURCE_FM_RX:
         device = AudioSystem::DEVICE_IN_FM_RX;
         break;
     case AUDIO_SOURCE_FM_RX_A2DP:
         device = AudioSystem::DEVICE_IN_FM_RX_A2DP;
         break;
-#endif
-
     default:
         LOGW("getInput() invalid input source %d", inputSource);
         device = 0;
@@ -692,13 +680,12 @@ status_t AudioPolicyManager::startOutput(audio_io_handle_t output,
     outputDesc->changeRefCount(stream, 1);
 
     uint32_t NewDevice = AudioPolicyManagerBase::getNewDevice(output);
-#ifdef FM_RADIO
+
     if((stream == AudioSystem::SYSTEM) && (FM_ANALOG == getFMMode())
     && (NewDevice == AudioSystem::DEVICE_OUT_FM)){
         NewDevice |= AudioSystem::DEVICE_OUT_WIRED_HEADSET;
         LOGE("Selecting AnlgFM + CODEC device %x",NewDevice);
     }
-#endif
     setOutputDevice(output, NewDevice, true);
 
     // handle special case for sonification while in call
@@ -743,11 +730,9 @@ status_t AudioPolicyManager::stopOutput(audio_io_handle_t output,
         uint32_t newDevice = AudioPolicyManagerBase::getNewDevice(mHardwareOutput, false);
 
 
-#ifdef FM_RADIO
         if(FM_ANALOG == getFMMode())
             setOutputDevice(output, newDevice,true);
         else
-#endif
 		setOutputDevice(output, newDevice);
 
 #ifdef WITH_A2DP
@@ -799,13 +784,10 @@ void AudioPolicyManager::setOutputDevice(audio_io_handle_t output, uint32_t devi
     outputDesc->mDevice = device;
     // mute media streams if both speaker and headset are selected
     if (device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET) ||
-        device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADPHONE)
-#ifdef FM_RADIO
+        device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADPHONE) ||
         device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET | AudioSystem::DEVICE_OUT_FM) ||
         device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET | AudioSystem::DEVICE_OUT_FM) ||
-        device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_FM_TX)
-#endif
-	){
+        device == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_FM_TX)){
         setStrategyMute(STRATEGY_MEDIA, true, output);
         // wait for the PCM output buffers to empty before proceeding with the rest of the command
         usleep(outputDesc->mLatency*2*1000);
@@ -820,13 +802,10 @@ void AudioPolicyManager::setOutputDevice(audio_io_handle_t output, uint32_t devi
 
     // if changing from a combined headset + speaker route, unmute media streams
     if (prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET) ||
-        prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADPHONE)
-#ifdef FM_RADIO
+        prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADPHONE) ||
         prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET | AudioSystem::DEVICE_OUT_FM) ||
         prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET | AudioSystem::DEVICE_OUT_FM) ||
-        prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_FM_TX)
-#endif
-	){
+        prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_FM_TX)){
         setStrategyMute(STRATEGY_MEDIA, false, output, delayMs);
     }
 }
@@ -853,11 +832,7 @@ status_t AudioPolicyManager::checkAndSetVolume(int stream, int index, audio_io_h
     // - the float value returned by computeVolume() changed
     // - the force flag is set
     if (volume != mOutputs.valueFor(output)->mCurVolume[stream] ||
-        (stream == AudioSystem::VOICE_CALL) ||
-#ifdef FM_RADIO
-	(stream == AudioSystem::FM) ||
-#endif
-	force) {
+        (stream == AudioSystem::VOICE_CALL) || (stream == AudioSystem::FM) || force) {
         mOutputs.valueFor(output)->mCurVolume[stream] = volume;
         LOGV("setStreamVolume() for output %d stream %d, volume %f, delay %d", output, stream, volume, delayMs);
         if (stream == AudioSystem::VOICE_CALL ||
@@ -888,26 +863,18 @@ status_t AudioPolicyManager::checkAndSetVolume(int stream, int index, audio_io_h
                voiceVolume = (float)index/(float)mStreams[stream].mIndexMax;
              }
         }
-        if ((voiceVolume >= 0 && output == mHardwareOutput)
-#ifdef FM_RADIO
-&&
-            (!(mAvailableOutputDevices & AudioSystem::DEVICE_OUT_FM))
-#endif
-        ) {
+        if ((voiceVolume >= 0 && output == mHardwareOutput) &&
+            (!(mAvailableOutputDevices & AudioSystem::DEVICE_OUT_FM))) {
             mpClientInterface->setVoiceVolume(voiceVolume, delayMs);
             mLastVoiceVolume = voiceVolume;
         }
-      }
-#ifdef FM_RADIO
-    else if ((stream == AudioSystem::FM) && (mAvailableOutputDevices & AudioSystem::DEVICE_OUT_FM)) {
+    } else if ((stream == AudioSystem::FM) && (mAvailableOutputDevices & AudioSystem::DEVICE_OUT_FM)) {
         float fmVolume = -1.0;
         fmVolume = (float)index/(float)mStreams[stream].mIndexMax;
         if (fmVolume >= 0 && output == mHardwareOutput) {
             mpClientInterface->setFmVolume(fmVolume, delayMs);
         }
    }
-#endif
     return NO_ERROR;
-
 }
 }; // namespace android
