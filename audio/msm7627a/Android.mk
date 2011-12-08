@@ -15,6 +15,10 @@ ifeq ($(BOARD_HAVE_BLUETOOTH),true)
   LOCAL_CFLAGS += -DWITH_A2DP
 endif
 
+ifeq ($(call is-android-codename-in-list,ICECREAM_SANDWICH),true)
+  LOCAL_CFLAGS += -DREG_KERNEL_UPDATE
+endif
+
 LOCAL_SHARED_LIBRARIES := \
     libcutils       \
     libutils        \
