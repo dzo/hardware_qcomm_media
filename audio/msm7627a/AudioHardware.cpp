@@ -87,9 +87,7 @@ static int snd_device = -1;
 #define PCM_CTL_DEVICE "/dev/msm_pcm_ctl"
 #define PREPROC_CTL_DEVICE "/dev/msm_preproc_ctl"
 #define VOICE_MEMO_DEVICE "/dev/msm_voicememo"
-#ifdef FM_RADIO
 #define FM_DEVICE  "/dev/msm_fm"
-#endif
 #define BTHEADSET_VGS "bt_headset_vgs"
 
 static uint32_t SND_DEVICE_CURRENT=-1;
@@ -472,7 +470,6 @@ String8 AudioHardware::getParameters(const String8& keys)
             param.addInt(String8("EVRC"), true );
         }
     }
-#ifdef FM_RADIO
 
     key = String8("Fm-radio");
     if ( param.get(key,value) == NO_ERROR ) {
@@ -480,7 +477,6 @@ String8 AudioHardware::getParameters(const String8& keys)
             param.addInt(String8("isFMON"), true );
         }
     }
-#endif
     LOGV("AudioHardware::getParameters() %s", param.toString().string());
     return param.toString();
 }
@@ -1184,7 +1180,6 @@ status_t AudioHardware::setVoiceVolume(float v)
     return NO_ERROR;
 }
 
-#ifdef FM_RADIO
 status_t AudioHardware::setFmVolume(float v)
 {
     if (v < 0.0) {
@@ -1203,7 +1198,6 @@ status_t AudioHardware::setFmVolume(float v)
     set_volume_rpc(SND_DEVICE_CURRENT, SND_METHOD_VOICE, vol, m7xsnddriverfd);
     return NO_ERROR;
 }
-#endif
 
 status_t AudioHardware::setMasterVolume(float v)
 {
@@ -1308,7 +1302,6 @@ status_t AudioHardware::doAudioRouteOrMute(uint32_t device)
     }
     return rc;
 }
-#ifdef FM_RADIO
 
 bool AudioHardware::isFMAnalog()
 {
@@ -1322,7 +1315,6 @@ bool AudioHardware::isFMAnalog()
 
     return isAfm;
 }
-#endif
 status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
 {
     /* currently this code doesn't work without the htc libacoustic */
@@ -1353,7 +1345,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
             } else if (inputDevice & AudioSystem::DEVICE_IN_WIRED_HEADSET) {
                     LOGI("Routing audio to Wired Headset\n");
                     new_snd_device = SND_DEVICE_HEADSET;
-#ifdef FM_RADIO
             } else if (inputDevice & AudioSystem::DEVICE_IN_FM_RX_A2DP) {
                     LOGI("Routing audio from FM to Bluetooth A2DP\n");
                     new_snd_device = SND_DEVICE_FM_DIGITAL_BT_A2DP_HEADSET;
@@ -1361,7 +1352,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
             } else if (inputDevice & AudioSystem::DEVICE_IN_FM_RX) {
                     LOGI("Routing audio to FM\n");
                     enableDgtlFmDriver = true;
-#endif
             } else {
                 if (outputDevices & AudioSystem::DEVICE_OUT_SPEAKER) {
                     LOGI("Routing audio to Speakerphone\n");
@@ -1408,7 +1398,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
             new_snd_device = SND_DEVICE_STEREO_HEADSET_AND_SPEAKER;
             new_post_proc_feature_mask = (ADRC_ENABLE | EQ_ENABLE | RX_IIR_ENABLE | MBADRC_ENABLE);
 #endif
-#if FM_RADIO
         } else if ((outputDevices & AudioSystem::DEVICE_OUT_WIRED_HEADSET) &&
                    (outputDevices & AudioSystem::DEVICE_OUT_FM)) {
             if( !isFMAnalog() ){
@@ -1431,7 +1420,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
             LOGW("Enabling Anlg FM on wired headset\n");
             new_snd_device = SND_DEVICE_FM_ANALOG_STEREO_HEADSET;
             enableDgtlFmDriver = false;
-#endif
         } else if (outputDevices &
                    (AudioSystem::DEVICE_OUT_BLUETOOTH_SCO | AudioSystem::DEVICE_OUT_BLUETOOTH_SCO_HEADSET)) {
             LOGI("Routing audio to Bluetooth PCM\n");
@@ -1464,13 +1452,11 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
         }
     }
 
-#if FM_RADIO
     if ((mFmFd == -1) && enableDgtlFmDriver ) {
         enableFM();
     } else if ((mFmFd != -1) && !enableDgtlFmDriver ) {
         disableFM();
     }
-#endif
 
     if((outputDevices  == 0) && (FmA2dpStatus == true))
        new_snd_device = SND_DEVICE_FM_DIGITAL_BT_A2DP_HEADSET;
@@ -1496,7 +1482,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
 }
 
 
-#if FM_RADIO
 status_t AudioHardware::enableFM()
 {
     LOGD("enableFM");
@@ -1540,7 +1525,7 @@ status_t AudioHardware::disableFM()
 
     return NO_ERROR;
 }
-#endif
+
 status_t AudioHardware::checkMicMute()
 {
     Mutex::Autolock lock(mLock);
@@ -2230,15 +2215,10 @@ ssize_t AudioHardware::AudioStreamInMSM72xx::read( void* buffer, ssize_t bytes)
     if (mState < AUDIO_INPUT_STARTED) {
         mState = AUDIO_INPUT_STARTED;
         // force routing to input device
-#if FM_RADIO
         if (mDevices != AudioSystem::DEVICE_IN_FM_RX) {
             mHardware->clearCurDevice();
             mHardware->doRouting(this);
         }
-#else
-            mHardware->clearCurDevice();
-            mHardware->doRouting(this);
-#endif
         if (ioctl(mFd, AUDIO_START, 0)) {
             LOGE("Error starting record");
             standby();
