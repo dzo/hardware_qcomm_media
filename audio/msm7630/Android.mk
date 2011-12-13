@@ -78,7 +78,7 @@ LOCAL_STATIC_LIBRARIES := \
 ifeq ($(call is-board-platform,msm7630_surf),true)
 LOCAL_MODULE := audio_policy.msm7630_surf
 else ifeq ($(call is-board-platform,msm7630_fusion),true)
-LOCAL_MODULE := audio.policy.msm7630_fusion
+LOCAL_MODULE := audio_policy.msm7630_fusion
 endif
 
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
