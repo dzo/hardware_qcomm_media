@@ -19,6 +19,10 @@ ifeq ($(BOARD_HAVE_QCOM_FM),true)
   LOCAL_CFLAGS += -DWITH_QCOM_FM
 endif
 
+ifeq ($(call is-android-codename-in-list,ICECREAM_SANDWICH),true)
+  LOCAL_CFLAGS += -DREG_KERNEL_UPDATE
+endif
+
 LOCAL_SHARED_LIBRARIES := \
     libcutils       \
     libutils        \
