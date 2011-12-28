@@ -692,8 +692,11 @@ status_t AudioPolicyManager::startOutput(audio_io_handle_t output,
     && (NewDevice == AudioSystem::DEVICE_OUT_FM)){
         NewDevice |= AudioSystem::DEVICE_OUT_WIRED_HEADSET;
         LOGE("Selecting AnlgFM + CODEC device %x",NewDevice);
+        setOutputDevice(output, NewDevice, true);
     }
-    setOutputDevice(output, NewDevice, true);
+    else {
+        setOutputDevice(output, NewDevice);
+    }
 
     // handle special case for sonification while in call
     if (isInCall()) {
