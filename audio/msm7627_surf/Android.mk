@@ -61,8 +61,8 @@ LOCAL_SHARED_LIBRARIES := \
     libmedia
 
 LOCAL_STATIC_LIBRARIES := \
-    libmedia_helper  \
-    libaudiopolicy_legacy
+    libaudiopolicy_legacy \
+    libmedia_helper
 
 LOCAL_MODULE := audio_policy.msm7627_surf
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
