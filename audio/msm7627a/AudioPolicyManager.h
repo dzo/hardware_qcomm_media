@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 The Android Open Source Project
- * Copyright (C) 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (C) 2012, Code Aurora Forum. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,13 @@ public:
 
         virtual uint32_t getDeviceForStrategy(routing_strategy strategy, bool fromCache = true);
         virtual void setForceUse(AudioSystem::force_use usage, AudioSystem::forced_config config);
+        virtual bool needsDirectOuput(AudioSystem::stream_type stream,
+                                    uint32_t samplingRate,
+                                    uint32_t format,
+                                    uint32_t channels,
+                                    AudioSystem::output_flags flags,
+                                    uint32_t device);
+
 protected:
         fm_modes fmMode;
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 The Android Open Source Project
- * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2012, Code Aurora Forum. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -614,6 +614,18 @@ void AudioPolicyManager::setForceUse(AudioSystem::force_use usage, AudioSystem::
     }
 
 }
+
+bool AudioPolicyManager::needsDirectOuput(AudioSystem::stream_type stream,
+                            uint32_t samplingRate,
+                            uint32_t format,
+                            uint32_t channels,
+                            AudioSystem::output_flags flags,
+                            uint32_t device)
+{
+return ((flags & AudioSystem::OUTPUT_FLAG_DIRECT) ||
+    (format !=0 && !AudioSystem::isLinearPCM(format)));
+}
+
 
 uint32_t AudioPolicyManager::getDeviceForInputSource(int inputSource)
 {
