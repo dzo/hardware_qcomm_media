@@ -17,7 +17,7 @@
 
 #include <math.h>
 
-//#define LOG_NDEBUG 0
+#define LOG_NDEBUG 0
 
 #define LOG_TAG "AudioHardwareMSM7X30"
 #include <utils/Log.h>
@@ -491,7 +491,7 @@ free(device_list);
 AudioHardware::AudioHardware() :
     mInit(false), mMicMute(true), mBluetoothNrec(true), mBluetoothId(0),
     mOutput(0),mBluetoothVGS(false),
-    mCurSndDevice(-1),mTtyMode(TTY_OFF), mDualMicEnabled(false), mFmFd(-1),
+    mCurSndDevice(-1),mTtyMode(TTY_OFF), mDualMicEnabled(true), mFmFd(-1),
     mVoipFd(-1), mNumVoipStreams(0), mDirectOutput(0)
 {
 
@@ -556,6 +556,10 @@ AudioHardware::AudioHardware() :
             else if(strcmp((char* )name[i],"handset_dual_mic_endfire_tx") == 0)
                 index = DEVICE_DUALMIC_HANDSET_TX;
             else if(strcmp((char* )name[i],"speaker_dual_mic_endfire_tx") == 0)
+                index = DEVICE_DUALMIC_SPEAKER_TX;
+            else if(strcmp((char* )name[i],"handset_dual_mic_broadside_tx") == 0)
+                index = DEVICE_DUALMIC_HANDSET_TX;
+            else if(strcmp((char* )name[i],"speaker_dual_mic_broadside_tx") == 0)
                 index = DEVICE_DUALMIC_SPEAKER_TX;
             else if(strcmp((char* )name[i],"tty_headset_mono_rx") == 0)
                 index = DEVICE_TTY_HEADSET_MONO_RX;
