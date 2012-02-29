@@ -30,6 +30,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <media/AudioSystem.h>
+#include <cutils/properties.h>
 
 // ToDo: Remove this definition
 #define QC_PROP
@@ -247,6 +248,16 @@ bool isStreamOnAndActive(int Stream_type) {
     }
     return false;
 }
+
+int checkprop(char *s, int dflt) {
+    char value[128];
+    property_get(s,value,"Unknown");
+    if(!strcmp(value,"0")) return 0;
+    if(!strcmp(value,"1")) return 1;
+    if(!strcmp(value,"Unknown")) return dflt;
+    return dflt;
+}
+
 bool isStreamOnAndInactive(int Stream_type) {
     Routing_table* temp_ptr;
     Mutex::Autolock lock(mRoutingTableLock);
@@ -1112,7 +1123,10 @@ static status_t do_route_audio_rpc(uint32_t device,
     }
     else if(device == SND_DEVICE_HEADSET) {
         new_rx_device = DEVICE_HEADSET_RX;
-        new_tx_device = DEVICE_SPEAKER_TX;
+        if(checkprop("persist.headsetmic.enabled",0))
+            new_tx_device = DEVICE_HEADSET_TX;
+        else
+            new_tx_device = DEVICE_SPEAKER_TX;
         LOGV("In HEADSET");
     }
     else if(device == SND_DEVICE_NO_MIC_HEADSET) {
@@ -1139,7 +1153,7 @@ static status_t do_route_audio_rpc(uint32_t device,
     }
     else if(device == SND_DEVICE_IN_S_SADC_OUT_SPEAKER_PHONE) {
         new_rx_device = DEVICE_SPEAKER_RX;
-        new_tx_device = DEVICE_SPEAKER_TX;
+        new_tx_device = DEVICE_DUALMIC_SPEAKER_TX;
         LOGV("In DUALMIC_SPEAKER");
     }
     else if(device == SND_DEVICE_TTY_FULL) {
@@ -1278,8 +1292,6 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
     int audProcess = (ADRC_DISABLE | EQ_DISABLE | RX_IIR_DISABLE);
     int sndDevice = -1;
 
-
-
     if (input != NULL) {
         uint32_t inputDevice = input->devices();
         LOGI("do input routing device %x\n", inputDevice);
@@ -1389,7 +1401,7 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
         }
     }
 
-    if (mDualMicEnabled && mMode == AudioSystem::MODE_IN_CALL) {
+    if (checkprop("persist.dualmic.enabled",0) && mMode == AudioSystem::MODE_IN_CALL) {
         if (sndDevice == SND_DEVICE_HANDSET) {
             LOGI("Routing audio to handset with DualMike enabled\n");
             sndDevice = SND_DEVICE_IN_S_SADC_OUT_HANDSET;
