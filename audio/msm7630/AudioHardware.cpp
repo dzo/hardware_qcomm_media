@@ -1123,7 +1123,7 @@ static status_t do_route_audio_rpc(uint32_t device,
     }
     else if(device == SND_DEVICE_HEADSET) {
         new_rx_device = DEVICE_HEADSET_RX;
-        if(checkprop("persist.headsetmic.enabled",0))
+        if(checkprop("persist.sys.headsetmic.enabled",0))
             new_tx_device = DEVICE_HEADSET_TX;
         else
             new_tx_device = DEVICE_SPEAKER_TX;
@@ -1401,7 +1401,7 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
         }
     }
 
-    if (checkprop("persist.dualmic.enabled",0) && mMode == AudioSystem::MODE_IN_CALL) {
+    if (checkprop("persist.sys.dualmic.enabled",0) && mMode == AudioSystem::MODE_IN_CALL) {
         if (sndDevice == SND_DEVICE_HANDSET) {
             LOGI("Routing audio to handset with DualMike enabled\n");
             sndDevice = SND_DEVICE_IN_S_SADC_OUT_HANDSET;
