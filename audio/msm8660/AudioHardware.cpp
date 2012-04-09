@@ -2439,6 +2439,8 @@ ssize_t AudioHardware::AudioStreamOutDirect::write(const void* buffer, size_t by
             // fill 2 buffers before AUDIO_START
             mStartCount = AUDIO_HW_NUM_OUT_BUF;
             mStandby = false;
+
+            Mutex::Autolock lock(mDeviceSwitchLock);
             //Routing Voip
             if ((cur_rx != INVALID_DEVICE) && (cur_tx != INVALID_DEVICE))
             {
@@ -2468,8 +2470,6 @@ ssize_t AudioHardware::AudioStreamOutDirect::write(const void* buffer, size_t by
             LOGD("Starting voip call and UnMuting the call");
             msm_start_voice_ext(voip_session_id);
             msm_set_voice_tx_mute_ext(voip_session_mute,voip_session_id);
-            if(!isDeviceListEmpty())
-                updateDeviceInfo(cur_rx,cur_tx);
             addToTable(0,cur_rx,cur_tx,VOIP_CALL,true);
         }
     }
@@ -3263,6 +3263,8 @@ status_t AudioHardware::AudioStreamInVoip::set(
             }
 
             LOGV("Going to enable RX/TX device for voice stream");
+
+            Mutex::Autolock lock(mDeviceSwitchLock);
             // Routing Voip
            if ( (cur_rx != INVALID_DEVICE) && (cur_tx != INVALID_DEVICE))
            {
@@ -3296,8 +3298,6 @@ status_t AudioHardware::AudioStreamInVoip::set(
            LOGD("Starting voip call and UnMuting the call");
            msm_start_voice_ext(voip_session_id);
            msm_set_voice_tx_mute_ext(voip_session_mute,voip_session_id);
-           if(!isDeviceListEmpty())
-                updateDeviceInfo(cur_rx,cur_tx);
            addToTable(0,cur_rx,cur_tx,VOIP_CALL,true);
     }
     mFormat =  *pFormat;
