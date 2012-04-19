@@ -833,14 +833,6 @@ void AudioPolicyManager::setOutputDevice(audio_io_handle_t output, uint32_t devi
         usleep(outputDesc->mLatency*2*1000);
     }
 
-#ifdef WITH_A2DP
-    // suspend A2DP output if SCO device is selected
-    if (AudioSystem::isBluetoothScoDevice((AudioSystem::audio_devices)device)) {
-         if (mA2dpOutput != 0) {
-             mpClientInterface->suspendOutput(mA2dpOutput);
-         }
-    }
-#endif
     // do the routing
     AudioParameter param = AudioParameter();
     param.addInt(String8(AudioParameter::keyRouting), (int)device);
@@ -848,15 +840,6 @@ void AudioPolicyManager::setOutputDevice(audio_io_handle_t output, uint32_t devi
     // update stream volumes according to new device
     applyStreamVolumes(output, device, delayMs);
 
-#ifdef WITH_A2DP
-    // if disconnecting SCO device, restore A2DP output
-    if (AudioSystem::isBluetoothScoDevice((AudioSystem::audio_devices)prevDevice)) {
-         if (mA2dpOutput != 0) {
-             LOGV("restore A2DP output");
-             mpClientInterface->restoreOutput(mA2dpOutput);
-         }
-    }
-#endif
     // if changing from a combined headset + speaker route, unmute media streams
     if (prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADSET) ||
         prevDevice == (AudioSystem::DEVICE_OUT_SPEAKER | AudioSystem::DEVICE_OUT_WIRED_HEADPHONE) ||
