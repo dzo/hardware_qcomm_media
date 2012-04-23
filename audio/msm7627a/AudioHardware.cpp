@@ -277,16 +277,6 @@ AudioStreamIn* AudioHardware::openInputStream(
         return 0;
     }
 
-    if ( (mMode == AudioSystem::MODE_IN_CALL) &&
-         (getInputSampleRate(*sampleRate) > AUDIO_HW_IN_SAMPLERATE) &&
-         (*format == AUDIO_HW_IN_FORMAT) )
-    {
-        LOGE("PCM recording, in a voice call, with sample rate more than 8K not supported \
-                re-configure with 8K and try software re-sampler ");
-        *status = BAD_VALUE;
-        *sampleRate = AUDIO_HW_IN_SAMPLERATE;
-        return 0;
-    }
 
     mLock.lock();
 
