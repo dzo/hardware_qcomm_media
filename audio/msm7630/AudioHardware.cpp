@@ -1153,7 +1153,7 @@ static status_t do_route_audio_rpc(uint32_t device,
     }
     else if(device == SND_DEVICE_IN_S_SADC_OUT_SPEAKER_PHONE) {
         new_rx_device = DEVICE_SPEAKER_RX;
-        new_tx_device = DEVICE_DUALMIC_SPEAKER_TX;
+        new_tx_device = DEVICE_SPEAKER_TX;
         LOGV("In DUALMIC_SPEAKER");
     }
     else if(device == SND_DEVICE_TTY_FULL) {
