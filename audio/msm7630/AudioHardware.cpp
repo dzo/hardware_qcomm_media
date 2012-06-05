@@ -1053,7 +1053,7 @@ status_t AudioHardware::setVoiceVolume(float v)
 
     if(msm_set_voice_rx_vol(vol)) {
         LOGE("msm_set_voice_rx_vol(%d) failed errno = %d",vol,errno);
-        return -1;
+ //       return -1;
     }
     LOGV("msm_set_voice_rx_vol(%d) succeeded",vol);
     return NO_ERROR;
