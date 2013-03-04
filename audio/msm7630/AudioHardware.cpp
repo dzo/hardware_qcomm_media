@@ -17,7 +17,10 @@
 
 #include <math.h>
 
+#undef NDEBUG
 #define LOG_NDEBUG 0
+#define LOG_NIDEBUG  0
+#define LOG_NDDEBUG  0
 
 #define LOG_TAG "AudioHardwareMSM7X30"
 #include <utils/Log.h>
@@ -1294,7 +1297,7 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
 
     if (input != NULL) {
         uint32_t inputDevice = input->devices();
-        LOGI("do input routing device %x\n", inputDevice);
+        LOGI("do input routing device %x %x\n", inputDevice,outputDevices);
         // ignore routing device information when we start a recording in voice
         // call
         // Recording will happen through currently active tx device
@@ -1324,7 +1327,7 @@ status_t AudioHardware::doRouting(AudioStreamInMSM72xx *input)
                 } else if (outputDevices == AudioSystem::DEVICE_OUT_WIRED_HEADPHONE) {
                     LOGI("Routing audio to Speakerphone\n");
                     sndDevice = SND_DEVICE_NO_MIC_HEADSET;
-                } else {
+                } else if (outputDevices == AudioSystem::DEVICE_OUT_EARPIECE) {
                     LOGI("Routing audio to Handset\n");
                     sndDevice = SND_DEVICE_HANDSET;
                 }

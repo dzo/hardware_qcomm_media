@@ -16,7 +16,7 @@
  */
 
 #define LOG_TAG "AudioPolicyManager7x30"
-//#define LOG_NDDEBUG 0
+#define LOG_NDDEBUG 0
 #include <utils/Log.h>
 #include "AudioPolicyManager.h"
 #include <media/mediarecorder.h>
